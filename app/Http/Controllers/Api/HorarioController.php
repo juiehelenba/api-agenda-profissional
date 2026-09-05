@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\HorarioRequest;
 use App\Models\Horario;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
@@ -25,10 +26,10 @@ class HorarioController extends Controller
         return response()->json($horarios);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(HorarioRequest $request): JsonResponse
     {
         $this->authorize('create', Horario::class);
-        $dados = $this->dadosValidos($request);
+        $dados = $request->validated();
         $userId = $request->user()->id;
 
         if (Horario::existeConflito($userId, $dados['data'], $dados['hora_inicio'], $dados['hora_fim'])) {
@@ -53,10 +54,10 @@ class HorarioController extends Controller
         return response()->json($horario);
     }
 
-    public function update(Request $request, Horario $horario): JsonResponse
+    public function update(HorarioRequest $request, Horario $horario): JsonResponse
     {
         $this->authorize('update', $horario);
-        $dados = $this->dadosValidos($request);
+        $dados = $request->validated();
 
         if (Horario::existeConflito(
             $request->user()->id,
@@ -81,18 +82,5 @@ class HorarioController extends Controller
         $horario->delete();
 
         return response()->json(status: 204);
-    }
-
-    /** @return array<string, mixed> */
-    private function dadosValidos(Request $request): array
-    {
-        return $request->validate([
-            'cliente' => ['required', 'string', 'max:120'],
-            'data' => ['required', 'date'],
-            'hora_inicio' => ['required', 'date_format:H:i'],
-            'hora_fim' => ['required', 'date_format:H:i', 'after:hora_inicio'],
-            'status' => ['sometimes', 'in:agendado,confirmado,cancelado,concluido'],
-            'observacao' => ['nullable', 'string', 'max:500'],
-        ]);
     }
 }
