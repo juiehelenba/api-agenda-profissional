@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,16 +34,16 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json($request->user());
+        return UserResource::make($request->user())->response();
     }
 
-    /** @return array{access_token: string, token_type: string, user: User} */
+    /** @return array{access_token: string, token_type: string, user: UserResource} */
     private function respostaComToken(User $user): array
     {
         return [
             'access_token' => $user->criarToken(),
             'token_type' => 'bearer',
-            'user' => $user,
+            'user' => UserResource::make($user),
         ];
     }
 }

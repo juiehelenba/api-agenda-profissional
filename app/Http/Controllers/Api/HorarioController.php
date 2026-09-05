@@ -4,16 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\HorarioRequest;
+use App\Http\Resources\HorarioResource;
 use App\Models\Horario;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class HorarioController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', Horario::class);
 
@@ -21,9 +23,9 @@ class HorarioController extends Controller
             ->where('user_id', $request->user()->id)
             ->orderBy('data')
             ->orderBy('hora_inicio')
-            ->get();
+            ->paginate(15);
 
-        return response()->json($horarios);
+        return HorarioResource::collection($horarios);
     }
 
     public function store(HorarioRequest $request): JsonResponse
@@ -44,14 +46,16 @@ class HorarioController extends Controller
             'status' => $dados['status'] ?? 'agendado',
         ]);
 
-        return response()->json($horario, 201);
+        return HorarioResource::make($horario)
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function show(Request $request, Horario $horario): JsonResponse
     {
         $this->authorize('view', $horario);
 
-        return response()->json($horario);
+        return HorarioResource::make($horario)->response();
     }
 
     public function update(HorarioRequest $request, Horario $horario): JsonResponse
@@ -73,7 +77,7 @@ class HorarioController extends Controller
 
         $horario->update($dados);
 
-        return response()->json($horario);
+        return HorarioResource::make($horario)->response();
     }
 
     public function destroy(Request $request, Horario $horario): JsonResponse

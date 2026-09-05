@@ -56,4 +56,43 @@ class AuthTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('cliente', 'Carlos');
     }
+
+    public function test_cadastro_com_email_invalido_retorna_422(): void
+    {
+        $this->postJson('/api/register', [
+            'name' => 'Ana',
+            'email' => 'nao-e-email',
+            'password' => 'password1',
+        ])->assertUnprocessable();
+    }
+
+    public function test_me_devolve_profissional_autenticada(): void
+    {
+        $token = $this->postJson('/api/register', [
+            'name' => 'Ana',
+            'email' => 'ana@example.com',
+            'password' => 'password1',
+        ])->json('access_token');
+
+        $this->getJson('/api/me', ['Authorization' => "Bearer {$token}"])
+            ->assertOk()
+            ->assertJsonPath('email', 'ana@example.com')
+            ->assertJsonMissingPath('password');
+    }
+
+    public function test_login_devolve_token(): void
+    {
+        $this->postJson('/api/register', [
+            'name' => 'Ana',
+            'email' => 'ana@example.com',
+            'password' => 'password1',
+        ]);
+
+        $this->postJson('/api/login', [
+            'email' => 'ana@example.com',
+            'password' => 'password1',
+        ])
+            ->assertOk()
+            ->assertJsonStructure(['access_token', 'token_type', 'user' => ['id', 'email']]);
+    }
 }
