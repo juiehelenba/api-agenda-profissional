@@ -15,7 +15,6 @@ use Illuminate\Notifications\Notifiable;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     public function horarios(): HasMany
@@ -34,9 +33,6 @@ class User extends Authenticatable
         ], (string) config('app.key'), 'HS256');
     }
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [

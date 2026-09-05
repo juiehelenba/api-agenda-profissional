@@ -22,11 +22,6 @@ class Horario extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Dois horários do mesmo profissional no mesmo dia se cruzam
-     * quando um começa antes do outro terminar.
-     * Cancelados não ocupam a agenda.
-     */
     public static function existeConflito(
         int $userId,
         string $data,
