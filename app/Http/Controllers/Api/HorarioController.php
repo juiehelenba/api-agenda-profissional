@@ -4,13 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Horario;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class HorarioController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Horario::class);
+
         $horarios = Horario::query()
             ->where('user_id', $request->user()->id)
             ->orderBy('data')
@@ -22,6 +27,7 @@ class HorarioController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', Horario::class);
         $dados = $this->dadosValidos($request);
         $userId = $request->user()->id;
 
@@ -42,14 +48,14 @@ class HorarioController extends Controller
 
     public function show(Request $request, Horario $horario): JsonResponse
     {
-        $this->autorizar($request, $horario);
+        $this->authorize('view', $horario);
 
         return response()->json($horario);
     }
 
     public function update(Request $request, Horario $horario): JsonResponse
     {
-        $this->autorizar($request, $horario);
+        $this->authorize('update', $horario);
         $dados = $this->dadosValidos($request);
 
         if (Horario::existeConflito(
@@ -71,15 +77,10 @@ class HorarioController extends Controller
 
     public function destroy(Request $request, Horario $horario): JsonResponse
     {
-        $this->autorizar($request, $horario);
+        $this->authorize('delete', $horario);
         $horario->delete();
 
         return response()->json(status: 204);
-    }
-
-    private function autorizar(Request $request, Horario $horario): void
-    {
-        abort_if($horario->user_id !== $request->user()->id, 403, 'Este horário não é seu.');
     }
 
     /** @return array<string, mixed> */

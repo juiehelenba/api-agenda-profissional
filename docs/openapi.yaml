@@ -1,0 +1,176 @@
+openapi: 3.0.3
+info:
+  title: API Agenda Profissional
+  version: 0.3.0
+  description: >
+    Agenda de um profissional (horários). JWT no header Authorization.
+    401 = sem token. 403 = token válido, mas o horário é de outra pessoa.
+    422 = horário em cima de outro no mesmo dia.
+
+servers:
+  - url: http://localhost:8000/api
+
+paths:
+  /register:
+    post:
+      summary: Cadastrar profissional
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Registro'
+      responses:
+        '201':
+          description: Conta criada com token
+        '422':
+          description: Dados inválidos
+
+  /login:
+    post:
+      summary: Entrar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        '200':
+          description: Token
+        '401':
+          description: E-mail ou senha inválidos
+
+  /me:
+    get:
+      summary: Profissional autenticada
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dados da conta
+        '401':
+          description: Sem token
+
+  /horarios:
+    get:
+      summary: Listar horários da profissional
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista
+        '401':
+          description: Sem token
+    post:
+      summary: Criar horário
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HorarioInput'
+      responses:
+        '201':
+          description: Criado
+        '401':
+          description: Sem token
+        '422':
+          description: Validação ou conflito de horário
+
+  /horarios/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Ver um horário
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Horário
+        '401':
+          description: Sem token
+        '403':
+          description: Horário de outra profissional
+    put:
+      summary: Atualizar horário
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HorarioInput'
+      responses:
+        '200':
+          description: Atualizado
+        '403':
+          description: Horário de outra profissional
+        '422':
+          description: Validação ou conflito
+    delete:
+      summary: Apagar horário
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Apagado
+        '403':
+          description: Horário de outra profissional
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Registro:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+    Login:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    HorarioInput:
+      type: object
+      required: [cliente, data, hora_inicio, hora_fim]
+      properties:
+        cliente:
+          type: string
+        data:
+          type: string
+          format: date
+          example: '2026-09-10'
+        hora_inicio:
+          type: string
+          example: '14:00'
+        hora_fim:
+          type: string
+          example: '15:00'
+        status:
+          type: string
+          enum: [agendado, confirmado, cancelado, concluido]
+        observacao:
+          type: string
+          nullable: true
