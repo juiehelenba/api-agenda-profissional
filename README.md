@@ -35,11 +35,19 @@ cd api-agenda-profissional
 composer install
 cp .env.example .env
 php artisan key:generate
-php artisan migrate
+php artisan migrate --seed
 php artisan serve
 ```
 
 App em `http://localhost:8000`.
+
+Conta de demo (depois do seed): `ana@example.com` / `password1`.
+
+```bash
+curl -X POST http://localhost:8000/api/login ^
+  -H "Content-Type: application/json" ^
+  -d "{\"email\":\"ana@example.com\",\"password\":\"password1\"}"
+```
 
 ```bash
 php artisan test
