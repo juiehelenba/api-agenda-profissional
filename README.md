@@ -12,6 +12,8 @@ Não é um Google Calendar. O ponto do repo é mostrar API + auth + regra de neg
 - Com o token, marca horários (cliente, data, início, fim).
 - Só vê e edita **os horários dela**.
 - Dois horários no mesmo dia **não podem se cruzar** (422).
+- A lista (`GET /api/horarios`) vem **paginada** (15 por página: `data`, `links`, `meta`).
+- Login aceita no máximo **5 tentativas por minuto** (429 se passar).
 
 | Código | Significado |
 |--------|-------------|
@@ -50,7 +52,7 @@ Todas começam com `/api`. As de horário exigem header `Authorization: Bearer {
 | Método | Rota | Auth |
 |--------|------|------|
 | POST | `/api/register` | não |
-| POST | `/api/login` | não |
+| POST | `/api/login` | não (máx. 5/min) |
 | GET | `/api/me` | sim |
 | GET | `/api/horarios` | sim |
 | POST | `/api/horarios` | sim |
@@ -68,4 +70,4 @@ curl -X POST http://localhost:8000/api/register ^
 
 ## O que este repo prova
 
-Auth JWT, isolamento por usuário (Policy), conflito de horário, testes de API e CI no GitHub.
+Auth JWT, isolamento por usuário (Policy), conflito de horário, CRUD testado (inclui PUT/DELETE), Form Request, API Resource, throttle no login e CI no GitHub.

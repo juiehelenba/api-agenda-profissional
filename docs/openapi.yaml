@@ -1,11 +1,13 @@
 openapi: 3.0.3
 info:
   title: API Agenda Profissional
-  version: 0.3.0
+  version: 0.6.0
   description: >
     Agenda de um profissional (horários). JWT no header Authorization.
     401 = sem token. 403 = token válido, mas o horário é de outra pessoa.
     422 = horário em cima de outro no mesmo dia.
+    429 = muitas tentativas de login (5 por minuto).
+    GET /horarios é paginado (data, links, meta).
 
 servers:
   - url: http://localhost:8000/api
@@ -40,6 +42,8 @@ paths:
           description: Token
         '401':
           description: E-mail ou senha inválidos
+        '429':
+          description: Mais de 5 tentativas no mesmo minuto
 
   /me:
     get:
@@ -59,7 +63,7 @@ paths:
         - bearerAuth: []
       responses:
         '200':
-          description: Lista
+          description: Lista paginada (data, links, meta)
         '401':
           description: Sem token
     post:
